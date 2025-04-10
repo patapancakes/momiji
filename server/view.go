@@ -24,7 +24,6 @@ import (
 	"html/template"
 	"net/http"
 	"net/url"
-	"os"
 
 	"github.com/patapancakes/momiji/identity"
 	"github.com/patapancakes/momiji/storage"
@@ -33,15 +32,15 @@ import (
 )
 
 type ViewData struct {
-	Requester identity.ID
 	Referer   *url.URL
+	Requester identity.ID
 	Posts     []storage.Post
 }
 
 var viewT = template.Must(template.New("main.html").Funcs(template.FuncMap{"timeago": timeago.English.Format, "b64": base64.StdEncoding.EncodeToString}).ParseGlob("templates/*.html"))
 
 func View(w http.ResponseWriter, r *http.Request) {
-	if r.Header.Get("Referer") == "" {
+	if r.Header.Get("Referer") == "" && r.PathValue("site") == "" {
 		http.Redirect(w, r, "https://github.com/patapancakes/momiji", http.StatusSeeOther)
 		return
 	}
@@ -49,28 +48,24 @@ func View(w http.ResponseWriter, r *http.Request) {
 	var vd ViewData
 	var err error
 
-	vd.Referer, err = url.Parse(r.Header.Get("Referer"))
+	u := r.Header.Get("Referer")
+	if r.PathValue("site") != "" {
+		u = r.PathValue("site")
+	}
+	vd.Referer, err = url.Parse(u)
 	if err != nil {
-		http.Error(w, fmt.Sprintf("failed to parse referer header: %s", err), http.StatusBadRequest)
+		http.Error(w, fmt.Sprintf("failed to parse site: %s", err), http.StatusBadRequest)
 		return
 	}
-	if vd.Referer.Host == "" {
+	if vd.Referer == nil || vd.Referer.Host == "" {
 		http.Error(w, "failed to derive host", http.StatusBadRequest)
 		return
-	}
-
-	if r.PathValue("site") != "" && vd.Referer.Host == "momiji.chat" {
-		vd.Referer, err = url.Parse(fmt.Sprintf("https://%s", r.PathValue("site")))
-		if err != nil {
-			http.Error(w, fmt.Sprintf("failed to parse site: %s", err), http.StatusBadRequest)
-			return
-		}
 	}
 
 	vd.Requester = identity.Derive(vd.Referer.Host, GetRequestIP(r))
 
 	vd.Posts, err = Backend.GetPosts(vd.Referer.Host)
-	if err != nil && !os.IsNotExist(err) {
+	if err != nil {
 		http.Error(w, fmt.Sprintf("failed to get posts: %s", err), http.StatusInternalServerError)
 		return
 	}
