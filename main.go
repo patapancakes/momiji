@@ -49,7 +49,7 @@ func main() {
 	// http routes
 	http.HandleFunc("GET /", server.View)
 	http.HandleFunc("GET /{site}", server.View)
-	http.HandleFunc("POST /", server.Post)
+	http.HandleFunc("POST /{site}", server.Post)
 
 	http.HandleFunc("GET /{site}/delete/{id}", server.Delete)
 

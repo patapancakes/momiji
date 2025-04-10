@@ -1,4 +1,4 @@
-{{define "postform"}}<form class="box postform" method="post">
+{{define "postform"}}<form class="box postform" method="post" action="/{{.Referer.Host}}">
 	<input type="text" id="name" placeholder="Name" name="name" maxlength="12" size="12">
 	<input type="text" id="body" placeholder="Comment" name="body" required maxlength="140">
 	<input type="hidden" name="referer" value="{{.Referer}}">

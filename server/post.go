@@ -30,19 +30,9 @@ import (
 )
 
 func Post(w http.ResponseWriter, r *http.Request) {
-	u, err := url.Parse(r.PostFormValue("referer"))
-	if err != nil {
-		http.Error(w, fmt.Sprintf("failed to parse referer value: %s", err), http.StatusBadRequest)
-		return
-	}
-	if u.Host == "" {
-		http.Error(w, "failed to derive host", http.StatusBadRequest)
-		return
-	}
-
 	ip := GetRequestIP(r)
 
-	result, err := Backend.GetVerificationResult(u.Host)
+	result, err := Backend.GetVerificationResult(r.PathValue("site"))
 	if err != nil {
 		http.Error(w, fmt.Sprintf("failed to get host verification: %s", err), http.StatusInternalServerError)
 		return
@@ -66,6 +56,16 @@ func Post(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
+		u, err := url.Parse(r.PostFormValue("referer"))
+		if err != nil {
+			http.Error(w, fmt.Sprintf("failed to parse referer value: %s", err), http.StatusBadRequest)
+			return
+		}
+		if u.Host != r.PathValue("site") {
+			http.Error(w, "referer does not match", http.StatusBadRequest)
+			return
+		}
+
 		result.Success, err = VerifyHost(u)
 		if err != nil {
 			http.Error(w, fmt.Sprintf("failed to check host verification: %s", err), http.StatusInternalServerError)
@@ -85,9 +85,9 @@ func Post(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	author := identity.Derive(u.Host, ip)
+	author := identity.Derive(r.PathValue("site"), ip)
 
-	latest, err := Backend.GetLatestPostByID(u.Host, author)
+	latest, err := Backend.GetLatestPostByID(r.PathValue("site"), author)
 	if err != nil {
 		http.Error(w, fmt.Sprintf("failed to get latest user post: %s", err), http.StatusInternalServerError)
 		return
@@ -110,11 +110,11 @@ func Post(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = Backend.AddPost(u.Host, storage.Post{Author: author, Persona: name, Body: body, Created: time.Now().UTC()})
+	err = Backend.AddPost(r.PathValue("site"), storage.Post{Author: author, Persona: name, Body: body, Created: time.Now().UTC()})
 	if err != nil {
 		http.Error(w, fmt.Sprintf("failed to insert post: %s", err), http.StatusInternalServerError)
 		return
 	}
 
-	http.Redirect(w, r, u.Host, http.StatusSeeOther)
+	http.Redirect(w, r, r.PathValue("site"), http.StatusSeeOther)
 }
