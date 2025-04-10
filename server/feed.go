@@ -51,6 +51,7 @@ func Feed(w http.ResponseWriter, r *http.Request) {
 	for _, post := range posts {
 		feed.Items = append(feed.Items, &feeds.Item{
 			Title:   post.Body,
+			Link:    &feeds.Link{Href: fmt.Sprintf("https://momiji.chat/%s#post%d", r.PathValue("site"), post.ID())},
 			Author:  &feeds.Author{Name: fmt.Sprintf("%s (%s)", post.Persona, post.Author)},
 			Created: post.Created,
 		})

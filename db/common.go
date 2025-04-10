@@ -31,6 +31,10 @@ type Post struct {
 	Created time.Time   `json:"created"`
 }
 
+func (p Post) ID() int64 {
+	return p.Created.UnixMilli()
+}
+
 type VerificationResult struct {
 	Requester identity.ID `json:"requester"`
 	Success   bool        `json:"success"`
