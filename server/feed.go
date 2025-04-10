@@ -26,28 +26,27 @@ import (
 )
 
 func Feed(w http.ResponseWriter, r *http.Request) {
-	posts, err := Backend.GetPosts(r.PathValue("site"))
-	if err != nil {
-		http.Error(w, fmt.Sprintf("failed to get posts: %s", err), http.StatusInternalServerError)
-		return
-	}
-	if posts == nil {
-		w.WriteHeader(http.StatusNotFound)
-		return
-	}
-
-	latest, err := Backend.GetVerificationResult(r.PathValue("site"))
+	result, err := Backend.GetVerificationResult(r.PathValue("site"))
 	if err != nil {
 		http.Error(w, fmt.Sprintf("failed to get host verification: %s", err), http.StatusInternalServerError)
+		return
+	}
+	if !result.Success {
+		http.Error(w, "unverified host", http.StatusBadRequest)
 		return
 	}
 
 	feed := feeds.Feed{
 		Title:   fmt.Sprintf("Momiji - %s", r.PathValue("site")),
 		Link:    &feeds.Link{Href: fmt.Sprintf("https://%s", r.PathValue("site"))},
-		Created: latest.Created,
+		Created: result.Created,
 	}
 
+	posts, err := Backend.GetPosts(r.PathValue("site"))
+	if err != nil {
+		http.Error(w, fmt.Sprintf("failed to get posts: %s", err), http.StatusInternalServerError)
+		return
+	}
 	for _, post := range posts {
 		feed.Items = append(feed.Items, &feeds.Item{
 			Title:   post.Body,
