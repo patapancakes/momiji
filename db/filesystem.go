@@ -24,6 +24,7 @@ import (
 	"io"
 	"os"
 	"path"
+	"slices"
 
 	"github.com/patapancakes/momiji/identity"
 )
@@ -144,6 +145,21 @@ func (fs Filesystem) GetPosts(host string) ([]Post, error) {
 	return data, nil
 }
 
+func (fs Filesystem) GetPost(host string, id int64) (Post, error) {
+	posts, err := fs.GetPosts(host)
+	if err != nil {
+		return Post{}, err
+	}
+
+	for _, post := range posts {
+		if post.ID() == id {
+			return post, nil
+		}
+	}
+
+	return Post{}, ErrNonExistentPost
+}
+
 func (fs Filesystem) AddPost(host string, post Post) error {
 	_, err := os.Stat(path.Join(fs.Path, host))
 	if err != nil {
@@ -164,17 +180,33 @@ func (fs Filesystem) AddPost(host string, post Post) error {
 
 	posts = append([]Post{post}, posts...)
 
-	f, err := os.OpenFile(path.Join(fs.Path, host, "posts.json"), os.O_CREATE|os.O_RDWR, 0644)
+	err = fs.WritePostsFile(host, posts)
 	if err != nil {
 		return err
 	}
 
-	_, err = f.Seek(0, io.SeekStart)
+	return nil
+}
+
+func (fs Filesystem) DeletePost(host string, id int64) error {
+	posts, err := fs.GetPosts(host)
 	if err != nil {
 		return err
 	}
 
-	err = json.NewEncoder(f).Encode(posts)
+	var found bool
+	for i, post := range posts {
+		if post.ID() == id {
+			found = true
+			posts = slices.Delete(posts, i, i+1)
+			break
+		}
+	}
+	if !found {
+		return ErrNonExistentPost
+	}
+
+	err = fs.WritePostsFile(host, posts)
 	if err != nil {
 		return err
 	}
@@ -200,4 +232,30 @@ func (fs Filesystem) GetLatestPostByID(host string, id identity.ID) (Post, error
 	}
 
 	return latest, nil
+}
+
+func (fs Filesystem) WritePostsFile(host string, posts []Post) error {
+	f, err := os.OpenFile(path.Join(fs.Path, host, "posts.json"), os.O_CREATE|os.O_RDWR, 0644)
+	if err != nil {
+		return err
+	}
+
+	defer f.Close()
+
+	err = f.Truncate(0)
+	if err != nil {
+		return err
+	}
+
+	_, err = f.Seek(0, io.SeekStart)
+	if err != nil {
+		return err
+	}
+
+	err = json.NewEncoder(f).Encode(posts)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

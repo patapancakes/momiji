@@ -19,10 +19,14 @@
 package db
 
 import (
+	"bytes"
+	"errors"
 	"time"
 
 	"github.com/patapancakes/momiji/identity"
 )
+
+var ErrNonExistentPost = errors.New("non-existent post")
 
 type Post struct {
 	Author  identity.ID `json:"author"`
@@ -33,6 +37,10 @@ type Post struct {
 
 func (p Post) ID() int64 {
 	return p.Created.UnixMilli()
+}
+
+func (p Post) IsCreatedBy(id identity.ID) bool {
+	return bytes.Equal(p.Author, id)
 }
 
 type VerificationResult struct {
@@ -51,8 +59,12 @@ type StorageBackend interface {
 
 	// GetPosts returns all Posts for a Host, sorted newest to oldest
 	GetPosts(host string) ([]Post, error)
+	// GetPost returns a Post for a Host
+	GetPost(host string, id int64) (Post, error)
 	// AddPost adds a new Post for a Host
 	AddPost(host string, post Post) error
+	// DeletePost deletes a post for a Host
+	DeletePost(host string, id int64) error
 	// GetLatestPostByID returns the latest Post for an ID
 	GetLatestPostByID(host string, id identity.ID) (Post, error)
 }

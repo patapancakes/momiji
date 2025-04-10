@@ -27,13 +27,15 @@ import (
 	"os"
 
 	"github.com/patapancakes/momiji/db"
+	"github.com/patapancakes/momiji/identity"
 
 	"github.com/xeonx/timeago"
 )
 
 type ViewData struct {
-	Referer *url.URL
-	Posts   []db.Post
+	Requester identity.ID
+	Referer   *url.URL
+	Posts     []db.Post
 }
 
 var viewT = template.Must(template.New("main.html").Funcs(template.FuncMap{"timeago": timeago.English.Format, "b64": base64.StdEncoding.EncodeToString}).ParseGlob("templates/*.html"))
@@ -64,6 +66,8 @@ func View(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	}
+
+	vd.Requester = identity.Derive(vd.Referer.Host, GetRequestIP(r))
 
 	vd.Posts, err = Backend.GetPosts(vd.Referer.Host)
 	if err != nil && !os.IsNotExist(err) {

@@ -1,0 +1,63 @@
+/*
+	momiji - a free and simple embedded message box
+	Copyright (C) 2025  Pancakes <patapancakes@pagefault.games>
+
+	This program is free software: you can redistribute it and/or modify
+	it under the terms of the GNU Affero General Public License as published by
+	the Free Software Foundation, either version 3 of the License, or
+	(at your option) any later version.
+
+	This program is distributed in the hope that it will be useful,
+	but WITHOUT ANY WARRANTY; without even the implied warranty of
+	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+	GNU Affero General Public License for more details.
+
+	You should have received a copy of the GNU Affero General Public License
+	along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
+package server
+
+import (
+	"fmt"
+	"net/http"
+	"strconv"
+
+	"github.com/patapancakes/momiji/identity"
+)
+
+func Delete(w http.ResponseWriter, r *http.Request) {
+	result, err := Backend.GetVerificationResult(r.PathValue("site"))
+	if err != nil {
+		http.Error(w, fmt.Sprintf("failed to get host verification: %s", err), http.StatusInternalServerError)
+		return
+	}
+	if !result.Success {
+		http.Error(w, "unverified host", http.StatusBadRequest)
+		return
+	}
+
+	id, err := strconv.Atoi(r.PathValue("id"))
+	if err != nil {
+		http.Error(w, fmt.Sprintf("failed to decode id value: %s", err), http.StatusBadRequest)
+		return
+	}
+
+	post, err := Backend.GetPost(r.PathValue("site"), int64(id))
+	if err != nil {
+		http.Error(w, fmt.Sprintf("failed to get post: %s", err), http.StatusInternalServerError)
+		return
+	}
+	if !post.IsCreatedBy(identity.Derive(r.PathValue("site"), GetRequestIP(r))) {
+		http.Error(w, "post not owned by you", http.StatusUnauthorized)
+		return
+	}
+
+	err = Backend.DeletePost(r.PathValue("site"), int64(id))
+	if err != nil {
+		http.Error(w, fmt.Sprintf("failed to delete post: %s", err), http.StatusInternalServerError)
+		return
+	}
+
+	http.Redirect(w, r, fmt.Sprintf("/%s", r.PathValue("site")), http.StatusSeeOther)
+}

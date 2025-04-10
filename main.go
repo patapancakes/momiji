@@ -51,6 +51,8 @@ func main() {
 	http.HandleFunc("GET /{site}", server.View)
 	http.HandleFunc("POST /", server.Post)
 
+	http.HandleFunc("GET /{site}/delete/{id}", server.Delete)
+
 	http.HandleFunc("GET /{site}/feed", server.Feed)
 	http.HandleFunc("GET /{site}/feed/{type}", server.Feed)
 
