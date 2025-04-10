@@ -25,8 +25,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/patapancakes/momiji/db"
 	"github.com/patapancakes/momiji/identity"
+	"github.com/patapancakes/momiji/storage"
 )
 
 func Post(w http.ResponseWriter, r *http.Request) {
@@ -110,7 +110,7 @@ func Post(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = Backend.AddPost(u.Host, db.Post{Author: author, Persona: name, Body: body, Created: time.Now().UTC()})
+	err = Backend.AddPost(u.Host, storage.Post{Author: author, Persona: name, Body: body, Created: time.Now().UTC()})
 	if err != nil {
 		http.Error(w, fmt.Sprintf("failed to insert post: %s", err), http.StatusInternalServerError)
 		return

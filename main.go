@@ -24,9 +24,9 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/patapancakes/momiji/db"
 	"github.com/patapancakes/momiji/identity"
 	"github.com/patapancakes/momiji/server"
+	"github.com/patapancakes/momiji/storage"
 )
 
 func main() {
@@ -41,7 +41,7 @@ func main() {
 	}
 
 	// init storage backend
-	server.Backend, err = db.NewFilesystemBackend("data")
+	server.Backend, err = storage.NewFilesystemBackend("data")
 	if err != nil {
 		log.Fatalf("failed to initialize storage backend: %s", err)
 	}

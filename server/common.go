@@ -25,12 +25,11 @@ import (
 	"net/url"
 	"strings"
 
-	"github.com/patapancakes/momiji/db"
-
+	"github.com/patapancakes/momiji/storage"
 	"golang.org/x/net/html"
 )
 
-var Backend db.StorageBackend
+var Backend storage.Backend
 
 func GetRequestIP(r *http.Request) net.IP {
 	host, _, _ := net.SplitHostPort(r.RemoteAddr) // assume this can't error

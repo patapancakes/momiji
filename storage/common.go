@@ -16,7 +16,7 @@
 	along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-package db
+package storage
 
 import (
 	"bytes"
@@ -49,7 +49,7 @@ type VerificationResult struct {
 	Created   time.Time   `json:"created"`
 }
 
-type StorageBackend interface {
+type Backend interface {
 	// GetVerificationResult returns the Host's VerificationResult
 	GetVerificationResult(host string) (VerificationResult, error)
 	// AddVerificationResult adds a Host's VerificationResult
