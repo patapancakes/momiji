@@ -71,16 +71,17 @@ func Post(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, fmt.Sprintf("failed to check host verification: %s", err), http.StatusInternalServerError)
 			return
 		}
-		if !result.Success {
-			http.Error(w, "unverified host", http.StatusBadRequest)
-			return
-		}
 
 		result.Created = time.Now().UTC()
 
 		err = Backend.AddVerificationResult(u.Host, result)
 		if err != nil {
 			http.Error(w, fmt.Sprintf("failed to add verified host: %s", err), http.StatusInternalServerError)
+			return
+		}
+
+		if !result.Success {
+			http.Error(w, "unverified host", http.StatusBadRequest)
 			return
 		}
 	}
