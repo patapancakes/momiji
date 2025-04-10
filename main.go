@@ -51,8 +51,11 @@ func main() {
 	http.HandleFunc("GET /{site}", server.View)
 	http.HandleFunc("POST /", server.Post)
 
+	http.HandleFunc("GET /{site}/feed", server.Feed)
+	http.HandleFunc("GET /{site}/feed/{type}", server.Feed)
+
 	// static files
-	http.Handle("GET /static/", http.StripPrefix("/static/", http.FileServer(http.Dir("static/"))))
+	http.Handle("GET /data/static/", http.StripPrefix("/data/static/", http.FileServer(http.Dir("static/"))))
 
 	// start http server
 	err = http.ListenAndServe(fmt.Sprintf(":%d", *port), nil)

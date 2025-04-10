@@ -21,6 +21,7 @@ package identity
 import (
 	"crypto/rand"
 	"crypto/sha256"
+	"encoding/base64"
 	"net"
 	"os"
 )
@@ -62,4 +63,8 @@ func Derive(realm string, ip net.IP) ID {
 	hash.Write(ip)
 
 	return hash.Sum(nil)
+}
+
+func (id ID) String() string {
+	return base64.StdEncoding.EncodeToString(id)
 }
