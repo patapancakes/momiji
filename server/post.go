@@ -50,7 +50,6 @@ func Post(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, fmt.Sprintf("failed to get latest verification result: %s", err), http.StatusInternalServerError)
 			return
 		}
-
 		if latest.Created.Add(time.Minute * 10).After(time.Now().UTC()) {
 			http.Error(w, "rate limited", http.StatusTooManyRequests)
 			return
@@ -93,7 +92,6 @@ func Post(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, fmt.Sprintf("failed to get latest user post: %s", err), http.StatusInternalServerError)
 		return
 	}
-
 	if latest.Created.Add(time.Second * 10).After(time.Now().UTC()) {
 		http.Error(w, "rate limited", http.StatusTooManyRequests)
 		return

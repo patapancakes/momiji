@@ -50,7 +50,7 @@ func View(w http.ResponseWriter, r *http.Request) {
 
 	u := r.Header.Get("Referer")
 	if r.PathValue("site") != "" {
-		u = r.PathValue("site")
+		u = fmt.Sprintf("https://%s", r.PathValue("site"))
 	}
 	vd.Referer, err = url.Parse(u)
 	if err != nil {
