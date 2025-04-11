@@ -21,12 +21,30 @@ package server
 import (
 	"fmt"
 	"net/http"
+	"net/url"
 	"strconv"
 
 	"github.com/patapancakes/momiji/identity"
 )
 
 func Delete(w http.ResponseWriter, r *http.Request) {
+	if r.Header.Get("Sec-Fetch-Site") != "" && r.Header.Get("Sec-Fetch-Site") != "same-origin" {
+		http.Error(w, "request looks forged", http.StatusBadRequest)
+		return
+	}
+	if r.Header.Get("Referer") != "" {
+		u, err := url.Parse(r.Header.Get("Referer"))
+		if err != nil {
+			http.Error(w, fmt.Sprintf("failed to parse referer header: %s", err), http.StatusBadRequest)
+			return
+		}
+
+		if u.Host != "momiji.chat" {
+			http.Error(w, "request looks forged", http.StatusBadRequest)
+			return
+		}
+	}
+
 	result, err := Backend.GetVerificationResult(r.PathValue("site"))
 	if err != nil {
 		http.Error(w, fmt.Sprintf("failed to get host verification: %s", err), http.StatusInternalServerError)
