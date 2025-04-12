@@ -31,8 +31,8 @@ import (
 )
 
 type Server struct {
-	mux *http.ServeMux
-	back storage.Backend
+	mux   *http.ServeMux
+	back  storage.Backend
 	ident identity.Identity
 }
 

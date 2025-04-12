@@ -38,7 +38,7 @@ type Identity struct {
 
 func New(keyfile string) (Identity, error) {
 	var err error
-	
+
 	var i Identity
 	i.key, err = os.ReadFile(keyfile)
 	if err == nil {
