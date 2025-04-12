@@ -41,11 +41,11 @@ func ThemeFromURLValues(v url.Values) Theme {
 	if IsValidHexColor(v.Get("style")) {
 		t.Style = v.Get("style")
 	}
-	if IsValidHexColor(v.Get("bgeven")) {
-		t.Even = v.Get("bgeven")
+	if IsValidHexColor(v.Get("even")) {
+		t.Even = v.Get("even")
 	}
-	if IsValidHexColor(v.Get("bgodd")) {
-		t.Odd = v.Get("bgodd")
+	if IsValidHexColor(v.Get("odd")) {
+		t.Odd = v.Get("odd")
 	}
 	if IsValidHexColor(v.Get("border")) {
 		t.Border = v.Get("border")
