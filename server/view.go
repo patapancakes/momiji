@@ -33,6 +33,7 @@ import (
 
 type ViewData struct {
 	Referer   *url.URL
+	Theme     Theme
 	Requester identity.ID
 	Posts     []storage.Post
 }
@@ -61,6 +62,8 @@ func (s Server) View(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "failed to derive host", http.StatusBadRequest)
 		return
 	}
+
+	vd.Theme = ThemeFromURLValues(r.URL.Query())
 
 	vd.Requester = s.ident.Derive(vd.Referer.Host, GetRequestIP(r))
 

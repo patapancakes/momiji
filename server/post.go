@@ -114,5 +114,11 @@ func (s Server) Post(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	http.Redirect(w, r, r.PathValue("site"), http.StatusSeeOther)
+	site := r.PathValue("site")
+	v, err := url.ParseQuery(r.PostFormValue("theme"))
+	if err == nil {
+		site = fmt.Sprintf("%s?%s", site, ThemeFromURLValues(v).Encode())
+	}
+
+	http.Redirect(w, r, site, http.StatusSeeOther)
 }

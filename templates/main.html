@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en"{{if eq .Referer.Host "demo.momiji.chat"}} class="demo"{{end}}>
 	<head>
 		<title>Momiji</title>
 		<meta charset="UTF-8">
@@ -7,6 +7,8 @@
 		<meta name="title" content="Momiji">
 		<meta name="description" content="A free and simple embedded message box">
 		<link rel="stylesheet" type="text/css" href="/data/static/main.css">
+		{{if eq .Referer.Host "demo.momiji.chat"}}{{template "demo"}}{{end}}
+		{{template "theme" .Theme}}
 	</head>
 	<body>
 		{{template "topbox" .}}

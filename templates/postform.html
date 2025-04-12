@@ -2,5 +2,6 @@
 	<input type="text" id="name" placeholder="Name" name="name" maxlength="12" size="12">
 	<input type="text" id="body" placeholder="Comment" name="body" required maxlength="140">
 	<input type="hidden" name="referer" value="{{.Referer}}">
+	<input type="hidden" name="theme" value="{{.Theme.Encode}}">
 	<input type="submit" value="Send">
 </form>{{end}}

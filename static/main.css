@@ -25,6 +25,7 @@ html {
 
 html, body {color-scheme:var(--mode); background:var(--background); accent-color:var(--accent); margin:0; font-family:system-ui, sans-serif; scrollbar-width:thin;}
 
+a {color:var(--link, revert);}
 a:not(:hover) {text-decoration:none;}
 
 .box {border:1px solid var(--border); background-color:var(--bg-odd); padding:6px; font-size:12px; color:var(--text); display:block; overflow:hidden;}
