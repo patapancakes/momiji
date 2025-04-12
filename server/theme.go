@@ -62,31 +62,3 @@ func ThemeFromURLValues(v url.Values) Theme {
 
 	return t
 }
-
-func (t Theme) Encode() string {
-	v := make(url.Values)
-
-	if t.Style != "" {
-		v.Set("style", t.Style)
-	}
-	if t.Even != "" {
-		v.Set("bgeven", t.Even)
-	}
-	if t.Odd != "" {
-		v.Set("bgodd", t.Odd)
-	}
-	if t.Border != "" {
-		v.Set("border", t.Border)
-	}
-	if t.Text != "" {
-		v.Set("txt", t.Text)
-	}
-	if t.Message != "" {
-		v.Set("msg", t.Message)
-	}
-	if t.Link != "" {
-		v.Set("link", t.Link)
-	}
-
-	return v.Encode()
-}

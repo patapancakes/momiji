@@ -114,10 +114,18 @@ func (s Server) Post(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	site := r.PathValue("site")
-	v, err := url.ParseQuery(r.PostFormValue("theme"))
-	if err == nil {
-		site = fmt.Sprintf("%s?%s", site, ThemeFromURLValues(v).Encode())
+	site := fmt.Sprintf("/%s", r.PathValue("site"))
+	if r.Header.Get("Referer") != "" {
+		u, err := url.Parse(r.Header.Get("Referer"))
+		if err != nil {
+			http.Error(w, fmt.Sprintf("failed to parse referer header: %s", err), http.StatusBadRequest)
+			return
+		}
+		if u.Host == "momiji.chat" {
+			u.Path = r.PathValue("site")
+		}
+
+		site = u.String()
 	}
 
 	http.Redirect(w, r, site, http.StatusSeeOther)

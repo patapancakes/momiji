@@ -75,5 +75,19 @@ func (s Server) Delete(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	http.Redirect(w, r, fmt.Sprintf("/%s", r.PathValue("site")), http.StatusSeeOther)
+	site := fmt.Sprintf("/%s", r.PathValue("site"))
+	if r.Header.Get("Referer") != "" {
+		u, err := url.Parse(r.Header.Get("Referer"))
+		if err != nil {
+			http.Error(w, fmt.Sprintf("failed to parse referer header: %s", err), http.StatusBadRequest)
+			return
+		}
+		if u.Host == "momiji.chat" {
+			u.Path = r.PathValue("site")
+		}
+
+		site = u.String()
+	}
+
+	http.Redirect(w, r, site, http.StatusSeeOther)
 }
