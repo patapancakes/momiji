@@ -28,43 +28,46 @@ import (
 
 type ID []byte
 
-var key []byte
+func (id ID) String() string {
+	return base64.StdEncoding.EncodeToString(id)
+}
 
-func Init(keyfile string) error {
+type Identity struct {
+	key []byte
+}
+
+func New(keyfile string) (Identity, error) {
 	var err error
-
-	key, err = os.ReadFile(keyfile)
+	
+	var i Identity
+	i.key, err = os.ReadFile(keyfile)
 	if err == nil {
-		return nil
+		return Identity{}, nil
 	}
 	if !os.IsNotExist(err) {
-		return err
+		return Identity{}, err
 	}
 
 	buf := make([]byte, 256)
 	_, err = rand.Read(buf)
 	if err != nil {
-		return err
+		return Identity{}, err
 	}
 
 	err = os.WriteFile(keyfile, buf, 0644)
 	if err != nil {
-		return err
+		return Identity{}, err
 	}
 
-	return nil
+	return i, nil
 }
 
-func Derive(realm string, ip net.IP) ID {
+func (i Identity) Derive(realm string, ip net.IP) ID {
 	hash := sha256.New()
 
-	hash.Write(key)
+	hash.Write(i.key)
 	hash.Write([]byte(realm))
 	hash.Write(ip)
 
 	return hash.Sum(nil)
-}
-
-func (id ID) String() string {
-	return base64.StdEncoding.EncodeToString(id)
 }

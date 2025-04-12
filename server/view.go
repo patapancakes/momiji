@@ -39,7 +39,7 @@ type ViewData struct {
 
 var viewT = template.Must(template.New("main.html").Funcs(template.FuncMap{"timeago": timeago.English.Format, "b64": base64.StdEncoding.EncodeToString}).ParseGlob("templates/*.html"))
 
-func View(w http.ResponseWriter, r *http.Request) {
+func (s Server) View(w http.ResponseWriter, r *http.Request) {
 	if r.Header.Get("Referer") == "" && r.PathValue("site") == "" {
 		http.Redirect(w, r, "https://github.com/patapancakes/momiji", http.StatusSeeOther)
 		return
@@ -62,9 +62,9 @@ func View(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	vd.Requester = identity.Derive(vd.Referer.Host, GetRequestIP(r))
+	vd.Requester = s.ident.Derive(vd.Referer.Host, GetRequestIP(r))
 
-	vd.Posts, err = Backend.GetPosts(vd.Referer.Host)
+	vd.Posts, err = s.back.GetPosts(vd.Referer.Host)
 	if err != nil {
 		http.Error(w, fmt.Sprintf("failed to get posts: %s", err), http.StatusInternalServerError)
 		return

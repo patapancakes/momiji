@@ -25,14 +25,13 @@ import (
 	"strings"
 	"time"
 
-	"github.com/patapancakes/momiji/identity"
 	"github.com/patapancakes/momiji/storage"
 )
 
-func Post(w http.ResponseWriter, r *http.Request) {
+func (s Server) Post(w http.ResponseWriter, r *http.Request) {
 	ip := GetRequestIP(r)
 
-	result, err := Backend.GetVerificationResult(r.PathValue("site"))
+	result, err := s.back.GetVerificationResult(r.PathValue("site"))
 	if err != nil {
 		http.Error(w, fmt.Sprintf("failed to get host verification: %s", err), http.StatusInternalServerError)
 		return
@@ -43,9 +42,9 @@ func Post(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		result.Requester = identity.Derive("verification", ip)
+		result.Requester = s.ident.Derive("verification", ip)
 
-		latest, err := Backend.GetLatestVerificationResultByID(result.Requester)
+		latest, err := s.back.GetLatestVerificationResultByID(result.Requester)
 		if err != nil {
 			http.Error(w, fmt.Sprintf("failed to get latest verification result: %s", err), http.StatusInternalServerError)
 			return
@@ -73,7 +72,7 @@ func Post(w http.ResponseWriter, r *http.Request) {
 
 		result.Created = time.Now().UTC()
 
-		err = Backend.AddVerificationResult(u.Host, result)
+		err = s.back.AddVerificationResult(u.Host, result)
 		if err != nil {
 			http.Error(w, fmt.Sprintf("failed to add verified host: %s", err), http.StatusInternalServerError)
 			return
@@ -85,9 +84,9 @@ func Post(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	author := identity.Derive(r.PathValue("site"), ip)
+	author := s.ident.Derive(r.PathValue("site"), ip)
 
-	latest, err := Backend.GetLatestPostByID(r.PathValue("site"), author)
+	latest, err := s.back.GetLatestPostByID(r.PathValue("site"), author)
 	if err != nil {
 		http.Error(w, fmt.Sprintf("failed to get latest user post: %s", err), http.StatusInternalServerError)
 		return
@@ -109,7 +108,7 @@ func Post(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = Backend.AddPost(r.PathValue("site"), storage.Post{Author: author, Persona: name, Body: body, Created: time.Now().UTC()})
+	err = s.back.AddPost(r.PathValue("site"), storage.Post{Author: author, Persona: name, Body: body, Created: time.Now().UTC()})
 	if err != nil {
 		http.Error(w, fmt.Sprintf("failed to insert post: %s", err), http.StatusInternalServerError)
 		return

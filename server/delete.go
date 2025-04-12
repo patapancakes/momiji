@@ -23,11 +23,9 @@ import (
 	"net/http"
 	"net/url"
 	"strconv"
-
-	"github.com/patapancakes/momiji/identity"
 )
 
-func Delete(w http.ResponseWriter, r *http.Request) {
+func (s Server) Delete(w http.ResponseWriter, r *http.Request) {
 	if r.Header.Get("Sec-Fetch-Site") != "" && r.Header.Get("Sec-Fetch-Site") != "same-origin" {
 		http.Error(w, "request looks forged", http.StatusBadRequest)
 		return
@@ -45,7 +43,7 @@ func Delete(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	result, err := Backend.GetVerificationResult(r.PathValue("site"))
+	result, err := s.back.GetVerificationResult(r.PathValue("site"))
 	if err != nil {
 		http.Error(w, fmt.Sprintf("failed to get host verification: %s", err), http.StatusInternalServerError)
 		return
@@ -61,17 +59,17 @@ func Delete(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	post, err := Backend.GetPost(r.PathValue("site"), int64(id))
+	post, err := s.back.GetPost(r.PathValue("site"), int64(id))
 	if err != nil {
 		http.Error(w, fmt.Sprintf("failed to get post: %s", err), http.StatusInternalServerError)
 		return
 	}
-	if !post.IsCreatedBy(identity.Derive(r.PathValue("site"), GetRequestIP(r))) {
+	if !post.IsCreatedBy(s.ident.Derive(r.PathValue("site"), GetRequestIP(r))) {
 		http.Error(w, "post not owned by you", http.StatusUnauthorized)
 		return
 	}
 
-	err = Backend.DeletePost(r.PathValue("site"), int64(id))
+	err = s.back.DeletePost(r.PathValue("site"), int64(id))
 	if err != nil {
 		http.Error(w, fmt.Sprintf("failed to delete post: %s", err), http.StatusInternalServerError)
 		return

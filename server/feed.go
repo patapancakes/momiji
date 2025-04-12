@@ -25,8 +25,8 @@ import (
 	"github.com/gorilla/feeds"
 )
 
-func Feed(w http.ResponseWriter, r *http.Request) {
-	result, err := Backend.GetVerificationResult(r.PathValue("site"))
+func (s Server) Feed(w http.ResponseWriter, r *http.Request) {
+	result, err := s.back.GetVerificationResult(r.PathValue("site"))
 	if err != nil {
 		http.Error(w, fmt.Sprintf("failed to get host verification: %s", err), http.StatusInternalServerError)
 		return
@@ -42,7 +42,7 @@ func Feed(w http.ResponseWriter, r *http.Request) {
 		Created: result.Created,
 	}
 
-	posts, err := Backend.GetPosts(r.PathValue("site"))
+	posts, err := s.back.GetPosts(r.PathValue("site"))
 	if err != nil {
 		http.Error(w, fmt.Sprintf("failed to get posts: %s", err), http.StatusInternalServerError)
 		return

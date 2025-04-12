@@ -34,33 +34,20 @@ func main() {
 	port := flag.Int("port", 80, "web server port")
 	flag.Parse()
 
-	// init identity package
-	err := identity.Init("identity.key")
-	if err != nil {
-		log.Fatalf("failed to initialize identity package: %s", err)
-	}
-
-	// init storage backend
-	server.Backend, err = storage.NewFilesystemBackend("data")
+	back, err := storage.NewFilesystemBackend("data")
 	if err != nil {
 		log.Fatalf("failed to initialize storage backend: %s", err)
 	}
 
-	// http routes
-	http.HandleFunc("GET /", server.View)
-	http.HandleFunc("GET /{site}", server.View)
-	http.HandleFunc("POST /{site}", server.Post)
+	ident, err := identity.New("identity.key")
+	if err != nil {
+		log.Fatalf("failed to initialize identity package: %s", err)
+	}
 
-	http.HandleFunc("GET /{site}/delete/{id}", server.Delete)
-
-	http.HandleFunc("GET /{site}/feed", server.Feed)
-	http.HandleFunc("GET /{site}/feed/{type}", server.Feed)
-
-	// static files
-	http.Handle("GET /data/static/", http.StripPrefix("/data/static/", http.FileServer(http.Dir("static/"))))
+	s := server.New(back, ident)
 
 	// start http server
-	err = http.ListenAndServe(fmt.Sprintf(":%d", *port), nil)
+	err = http.ListenAndServe(fmt.Sprintf(":%d", *port), s)
 	if err != nil {
 		log.Fatal(err)
 	}

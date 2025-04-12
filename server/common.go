@@ -25,11 +25,41 @@ import (
 	"net/url"
 	"strings"
 
+	"github.com/patapancakes/momiji/identity"
 	"github.com/patapancakes/momiji/storage"
 	"golang.org/x/net/html"
 )
 
-var Backend storage.Backend
+type Server struct {
+	mux *http.ServeMux
+	back storage.Backend
+	ident identity.Identity
+}
+
+func New(backend storage.Backend, identity identity.Identity) *Server {
+	mux := http.NewServeMux()
+
+	s := Server{mux: mux, back: backend, ident: identity}
+
+	// http routes
+	mux.HandleFunc("GET /", s.View)
+	mux.HandleFunc("GET /{site}", s.View)
+	mux.HandleFunc("POST /{site}", s.Post)
+
+	mux.HandleFunc("GET /{site}/delete/{id}", s.Delete)
+
+	mux.HandleFunc("GET /{site}/feed", s.Feed)
+	mux.HandleFunc("GET /{site}/feed/{type}", s.Feed)
+
+	// static files
+	mux.Handle("GET /data/static/", http.StripPrefix("/data/static/", http.FileServer(http.Dir("static/"))))
+
+	return &s
+}
+
+func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	s.mux.ServeHTTP(w, r)
+}
 
 func GetRequestIP(r *http.Request) net.IP {
 	host, _, _ := net.SplitHostPort(r.RemoteAddr) // assume this can't error
