@@ -38,7 +38,7 @@ var IsValidHexColor = regexp.MustCompile("^[a-f0-9]{6}$").MatchString
 func ThemeFromURLValues(v url.Values) Theme {
 	var t Theme
 
-	if IsValidHexColor(v.Get("style")) {
+	if v.Get("style") == "dark" {
 		t.Style = v.Get("style")
 	}
 	if IsValidHexColor(v.Get("even")) {

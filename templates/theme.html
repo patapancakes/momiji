@@ -1,11 +1,7 @@
-{{define "theme"}}<style type="text/css">
-	html {
-		{{if ne .Style ""}}--mode: #{{.Style}};{{end}}
-		{{if ne .Even ""}}--bg-even: #{{.Even}};{{end}}
-		{{if ne .Odd ""}}--bg-odd: #{{.Odd}};{{end}}
-		{{if ne .Border ""}}--border: #{{.Border}};{{end}}
-		{{if ne .Text ""}}--text: #{{.Text}};{{end}}
-		{{if ne .Message ""}}--msg-text: #{{.Message}};{{end}}
-		{{if ne .Link ""}}--link: #{{.Link}};{{end}}
-	}
-</style>{{end}}
+{{define "theme"}}style="{{if ne .Even ""}}--bg-even: #{{.Even}};{{end}}
+	{{if ne .Odd ""}}--bg-odd: #{{.Odd}};{{end}}
+	{{if ne .Border ""}}--border: #{{.Border}};{{end}}
+	{{if ne .Text ""}}--text: #{{.Text}};{{end}}
+	{{if ne .Message ""}}--msg-text: #{{.Message}};{{end}}
+	{{if ne .Link ""}}--link: #{{.Link}};{{end}}
+"{{end}}

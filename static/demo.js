@@ -1,3 +1,5 @@
+document.documentElement.classList.add("demo");
+
 var allowedVars = ["accent", "border", "bg-odd", "bg-even", "text", "msg-text", "link"];
 window.addEventListener("message", function(e) {
 	if (e.data["var"] == "mode") {
