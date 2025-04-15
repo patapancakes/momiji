@@ -21,7 +21,6 @@ package storage
 import (
 	"bytes"
 	"encoding/json"
-	"io"
 	"os"
 	"path"
 	"slices"
@@ -89,17 +88,12 @@ func (fs Filesystem) AddVerificationResult(host string, result VerificationResul
 
 	results[host] = result
 
-	f, err := os.OpenFile(path.Join(fs.Path, "verified.json"), os.O_CREATE|os.O_RDWR, 0644)
+	f, err := os.OpenFile(path.Join(fs.Path, "verified.json"), os.O_CREATE|os.O_TRUNC|os.O_RDWR, 0644)
 	if err != nil {
 		return err
 	}
 
 	defer f.Close()
-
-	_, err = f.Seek(0, io.SeekStart)
-	if err != nil {
-		return err
-	}
 
 	err = json.NewEncoder(f).Encode(results)
 	if err != nil {
@@ -235,22 +229,12 @@ func (fs Filesystem) GetLatestPostByID(host string, id identity.ID) (Post, error
 }
 
 func (fs Filesystem) WritePostsFile(host string, posts []Post) error {
-	f, err := os.OpenFile(path.Join(fs.Path, host, "posts.json"), os.O_CREATE|os.O_RDWR, 0644)
+	f, err := os.OpenFile(path.Join(fs.Path, host, "posts.json"), os.O_CREATE|os.O_TRUNC|os.O_RDWR, 0644)
 	if err != nil {
 		return err
 	}
 
 	defer f.Close()
-
-	err = f.Truncate(0)
-	if err != nil {
-		return err
-	}
-
-	_, err = f.Seek(0, io.SeekStart)
-	if err != nil {
-		return err
-	}
 
 	err = json.NewEncoder(f).Encode(posts)
 	if err != nil {
