@@ -22,7 +22,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"os"
-	"path"
+	"path/filepath"
 	"slices"
 
 	"github.com/patapancakes/momiji/identity"
@@ -49,7 +49,7 @@ func NewFilesystemBackend(path string) (Filesystem, error) {
 }
 
 func (fs Filesystem) GetVerificationResults() (map[string]VerificationResult, error) {
-	f, err := os.Open(path.Join(fs.Path, "verified.json"))
+	f, err := os.Open(filepath.Join(fs.Path, "verified.json"))
 	if err != nil {
 		if os.IsNotExist(err) {
 			return make(map[string]VerificationResult), nil
@@ -88,7 +88,7 @@ func (fs Filesystem) AddVerificationResult(host string, result VerificationResul
 
 	results[host] = result
 
-	f, err := os.OpenFile(path.Join(fs.Path, "verified.json"), os.O_CREATE|os.O_TRUNC|os.O_RDWR, 0644)
+	f, err := os.OpenFile(filepath.Join(fs.Path, "verified.json"), os.O_CREATE|os.O_TRUNC|os.O_RDWR, 0644)
 	if err != nil {
 		return err
 	}
@@ -119,7 +119,7 @@ func (fs Filesystem) GetLatestVerificationResultByID(id identity.ID) (Verificati
 }
 
 func (fs Filesystem) GetPosts(host string) ([]Post, error) {
-	f, err := os.Open(path.Join(fs.Path, host, "posts.json"))
+	f, err := os.Open(filepath.Join(fs.Path, host, "posts.json"))
 	if err != nil {
 		if os.IsNotExist(err) {
 			return nil, nil
@@ -155,13 +155,13 @@ func (fs Filesystem) GetPost(host string, id int64) (Post, error) {
 }
 
 func (fs Filesystem) AddPost(host string, post Post) error {
-	_, err := os.Stat(path.Join(fs.Path, host))
+	_, err := os.Stat(filepath.Join(fs.Path, host))
 	if err != nil {
 		if !os.IsNotExist(err) {
 			return err
 		}
 
-		err = os.Mkdir(path.Join(fs.Path, host), 0755)
+		err = os.Mkdir(filepath.Join(fs.Path, host), 0755)
 		if err != nil {
 			return err
 		}
@@ -229,7 +229,7 @@ func (fs Filesystem) GetLatestPostByID(host string, id identity.ID) (Post, error
 }
 
 func (fs Filesystem) WritePostsFile(host string, posts []Post) error {
-	f, err := os.OpenFile(path.Join(fs.Path, host, "posts.json"), os.O_CREATE|os.O_TRUNC|os.O_RDWR, 0644)
+	f, err := os.OpenFile(filepath.Join(fs.Path, host, "posts.json"), os.O_CREATE|os.O_TRUNC|os.O_RDWR, 0644)
 	if err != nil {
 		return err
 	}
